@@ -4,6 +4,10 @@ import com.legascooder.myhome.model.Board;
 import com.legascooder.myhome.repository.BoardRepository;
 import com.legascooder.myhome.validator.BoardValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,8 +29,15 @@ public class BoardController {
     @GetMapping("/list") // HTTP Get 요청을 처리하고 FrontEnd에 정보를 호출할 때 사용 (리소스 요청) 데이터를 요청할때 사용
     // <브라우저 히스토리에 남기때문에 보안을 위해서는 중요한 정보를 다루면 안됨>
     // Get는 보여줘
-    public String list(Model model) { // Model에 데이터를 담을때 addAttribute메소드를 사용.
-        List<Board> boards = boardRepository.findAll();
+    public String list(Model model, @PageableDefault(size = 2) Pageable pageable) { // Model에 데이터를 담을때 addAttribute메소드를 사용.
+        //한 페이지에서 데이터 갯수를 얼마나 표현할 수 있는지 PageableDefault 어노테이션으로 사이즈 수정(데이터가 많다면 화면에 보일 수 있게끔 데이터갯수 조정 가능)
+        Page<Board> boards = boardRepository.findAll(pageable); // 기존에 list에 있는 내용을 다 보여줬다면 JPA기능의 Page코드를 사용해서 정보가 많을경우 보여주는 내용을 분할하기 위해서 Page코드 사용
+        // board/list?page=0 첫번째 페이지부터 확인할 수 있음 /board/list?page=0&size=2 라면 한 페이지에 나타낼 수 있는 데이터 수량을 의미
+
+        int startPage = Math.max(1,boards.getPageable().getPageNumber() -4);
+        int endPage = Math.min(boards.getTotalPages(), boards.getPageable().getPageNumber() +4);
+        model.addAttribute("startPage", startPage);
+        model.addAttribute("endPage", endPage);
         model.addAttribute("boards",boards); //"boards를 지정한 이름을 통해서 boards객체를 사용
         return "board/list";
     }

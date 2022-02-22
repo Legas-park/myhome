@@ -2,12 +2,15 @@ package com.legascooder.myhome.controller;
 
 import com.legascooder.myhome.model.Board;
 import com.legascooder.myhome.repository.BoardRepository;
+import com.legascooder.myhome.service.BoardService;
 import com.legascooder.myhome.validator.BoardValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,6 +25,9 @@ public class BoardController {
 
     @Autowired
     private BoardRepository boardRepository;
+
+    @Autowired
+    private BoardService boardService;
 
     @Autowired //스프링의 디펜던시 인젝션을 사용하기위해서 기동될때 아래의 boardValidator의 인스턴스에 값이 저장됨
     private BoardValidator boardValidator;//PostMapping 에서 사용하기위해서 선언
@@ -60,13 +66,16 @@ public class BoardController {
     @PostMapping("/form") // Post는 추가작업을 수행하기 위해서 HTTPBody에 정보를 담에 보낼때 사용 (새로운 정보를 등록할때 주로 사용) 서버에 내용 전송
     //서버로 리로스를 생성하거나 업데이트하기위해 데이터를 보낼 때 사용함, 전송할 데이터를 body에 담아서 서버로 보냄
     //Post는 만들어줘/변경해줘
-    public String greetingSubmit(@Valid Board board, BindingResult bindingResult) {
+    public String postForm(@Valid Board board, BindingResult bindingResult, Authentication authentication) {
         // Valid 를 사용하기위해서 ModelAttribute에서 Valid 로 변경 사용이유는 Board클래스에 적음
         boardValidator.validate(board, bindingResult);
         if (bindingResult.hasErrors()) {//Board 클래스에서 선언한 Vaild annotation의 값이 2자리보다 크고 30자리보다 짧아야한다라는것을 적용
             return "board/form";
         }
-        boardRepository.save(board);  //save 메소드가 bord의 키값을 가리킴
+//        Authentication a = SecurityContextHolder.getContext().getAuthentication(); 전역변수 사용해서도 getName를 가져올 수 있다.
+        String username = authentication.getName();
+        boardService.save(username, board);
+//        boardRepository.save(board);  //save 메소드가 bord의 키값을 가리킴
         return "redirect:/board/list";
     }
 

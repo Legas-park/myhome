@@ -4,6 +4,7 @@ package com.legascooder.myhome.controller;
 import com.legascooder.myhome.model.Board;
 import com.legascooder.myhome.repository.BoardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 
@@ -61,7 +62,7 @@ class BoardApiController { //RESTful api 만들기
                     return repository.save(newBoard);
                 });
     }
-
+    @Secured("ROLE_ADMIN") // 권한에 따른 삭제처리권한 대상 부여
     @DeleteMapping("/boards/{id}")
     void deleteBoard(@PathVariable Long id) {
         repository.deleteById(id);

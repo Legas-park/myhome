@@ -11,5 +11,5 @@ import org.springframework.security.config.annotation.method.configuration.Globa
         jsr250Enabled = true)
 public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
 
-
+//삭제권한 부여를 위해서 클래스 생성
 }

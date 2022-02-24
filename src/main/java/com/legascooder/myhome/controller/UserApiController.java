@@ -21,12 +21,22 @@ class UserApiController { //RESTful api 만들기
 
 
     @GetMapping("/users")
-    List<User> all() {
-        List<User> users = repository.findAll();
-        log.debug("getBoards().size() 호출 전");
-        log.debug("getBoards().size() : {}", users.get(0).getBoards().size());
-        log.debug("getBoards().size() 호출 후");
-       return users;
+    Iterable<User> all(@RequestParam(required = false) String method, @RequestParam(required = false) String text) {
+        Iterable<User> users = null;
+        if("query".equals(method)){
+            users = repository.findByUsernameQuery(text); // method가 "query일때만 지정한 findByUsernameQuery가 호출될것임 like검색 정상적으로 작동
+        } else  if("nativeQuery".equals(method)){
+            users = repository.findByUsernameNativeQuery(text);
+        }else{
+            users = repository.findAll();
+        }
+        return users;
+//        else if("querydsl".equals(method)){
+//            QUser user = QUser.user;
+//            Predicate predicate = user.username.contains(text);
+//
+//            users = repository.findAll(predicate);
+//        } 자바 버전이슈로 사용방법만 배움
     }
 
     @PostMapping("/users") // Post요청을 하면 새로운 데이터가 생기도록 설정
